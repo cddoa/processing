@@ -68,7 +68,12 @@ tasks.register<Copy>("copyCore"){
     into(coreProject.layout.projectDirectory.dir("library"))
 }
 
-val legacyLibraries = emptyArray<String>()
+/**
+ * Legacy libraries that are pre-existing in the old build system.
+ * These are included to maintain backwards compatibility with older Processing sketches.
+ */
+val legacyLibraries = arrayOf("io","net")
+
 legacyLibraries.forEach { library ->
     tasks.register<Copy>("library-$library-extraResources"){
         val build = project(":java:libraries:$library").tasks.named("build")
@@ -88,7 +93,11 @@ legacyLibraries.forEach { library ->
     }
 }
 
-val libraries = arrayOf("dxf", "io", "net", "pdf", "serial", "svg")
+/**
+ * Libraries that are created/packaged from the current Gradle build.
+ * These are standard Processing libraries built from source.
+ */
+val libraries = arrayOf("dxf", "pdf", "serial", "svg")
 
 libraries.forEach { library ->
     val name = "create-$library-library"
