@@ -1,10 +1,14 @@
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
+    // Apply the Java plugin to enable Java compilation and JAR packaging
     java
-    alias(libs.plugins.mavenPublish)
 }
 
+/**
+ * Configure source sets so Gradle knows where to find Java source files.
+ * By default, Gradle uses src/main/java, but this project uses src/.
+ */
 sourceSets {
     main {
         java {
@@ -13,29 +17,53 @@ sourceSets {
     }
 }
 
+/**
+ * Define repositories used to resolve external dependencies.
+ */
 repositories {
+    // Maven Central hosts Batik and most common Java libraries
     mavenCentral()
 }
 
+/**
+ * Project dependencies.
+ */
 dependencies {
+    // Compile-time only dependency on Processing core (not bundled in output JAR)
     compileOnly(project(":core"))
 
+    // Apache Batik for SVG processing/rendering support
     implementation("org.apache.xmlgraphics:batik-all:1.19")
 }
 
+/**
+ * Custom task to package the library for Processing.
+ * This assembles:
+ * - the compiled JAR
+ * - library.properties
+ * - example sketches
+ * - runtime dependencies
+ * into a Processing-compatible library folder.
+ */
 tasks.register<Copy>("createLibrary") {
+    // Ensure the JAR is built before copying files
     dependsOn("jar")
+
+    // Output directory: build/library
     into(layout.buildDirectory.dir("library"))
 
+    // Copy Processing metadata and example sketches
     from(layout.projectDirectory) {
         include("library.properties")
         include("examples/**")
     }
 
+    // Copy runtime dependencies into the library folder
     from(configurations.runtimeClasspath) {
         into("library")
     }
 
+    // Copy and rename the main JAR to match Processing library conventions
     from(tasks.jar) {
         into("library")
         rename { "svg.jar" }
